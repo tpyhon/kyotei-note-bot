@@ -1,0 +1,22 @@
+﻿# 記事テンプレート設定
+article:
+  price: 500
+  free_section_chars: 350     # 無料部分の目標文字数
+  paid_section_chars: 700     # 有料部分の目標文字数
+
+  sections:
+    free:
+      - "opening"             # 波乃みなとの挨拶・今日の一言
+      - "venue_summary"       # 開催場・天候・水面状況サマリー
+      - "highlight"           # 注目レース番号の予告（答えは有料）
+      - "previous_result"     # 前日の的中実績
+    paid:
+      - "data_evidence"       # データ根拠（勝率・モーター成績・ST傾向）
+      - "prediction"          # 本命・対抗・穴の予想
+      - "buy_list"            # 具体的な買い目リスト
+      - "closing"             # みなとの一言コメント
+
+  character:
+    name: "波乃みなと"
+    persona: "明るく元気な競艇リポーター。競艇愛にあふれ、データ分析も得意。読者に寄り添う丁寧な語り口。"
+    tone: "です・ます調、絵文字適度に使用、専門用語には必ず注釈"

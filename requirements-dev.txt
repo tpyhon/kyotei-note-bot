@@ -1,0 +1,5 @@
+﻿pytest>=8.0.0
+pytest-mock>=3.14.0
+responses>=0.25.0
+black>=24.0.0
+ruff>=0.4.0

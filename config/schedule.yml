@@ -1,0 +1,18 @@
+﻿# 投稿スケジュール設定
+schedule:
+  # GitHub Actions cron は UTC で指定（JST = UTC+9）
+  # 例: JST 08:00 = UTC 23:00 (前日)
+  daily_post_utc: "23:00"   # JST 08:00 に相当
+  timezone: "Asia/Tokyo"
+
+  # 競艇場別の投稿タイミング（JST）
+  venues:
+    "22":   # 大村（ナイター）
+      post_time_jst: "08:00"
+      race_start_jst: "14:00"
+    "18":   # 住之江（ナイター）
+      post_time_jst: "08:30"
+      race_start_jst: "14:30"
+    "23":   # 下関（ミッドナイト）
+      post_time_jst: "19:00"
+      race_start_jst: "20:00"
