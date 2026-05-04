@@ -101,17 +101,37 @@ def _process_race(
         logger.info("[DRY_RUN] Note投稿スキップ: %s", article.title)
         note_url = "https://note.com/notes/dry_run_dummy"
     else:
+        # ステップ1: 下書き作成 → note_id と note_key を取得
+        draft = note_client.create_draft()
+        note_id = draft["id"]
+        note_key = draft["key"]
+        logger.info(
+            "[%s %dR] 下書き作成完了: id=%s key=%s",
+            race.venue_name, race.race_number, note_id, note_key,
+        )
+
+        # ステップ2: 下書き一時保存
+        note_client.save_draft(
+            note_id=note_id,
+            title=article.title,
+            body_html=body_html,
+        )
+        logger.info("[%s %dR] 下書き保存完了", race.venue_name, race.race_number)
+
+        # ステップ3: 公開
         note_url = note_client.publish(
-            note_id=None,        # publish内部でcreate_draft→save_draft→publishを行う
-            note_key=None,
+            note_id=note_id,
+            note_key=note_key,
             title=article.title,
             body_html=body_html,
             hashtags=article.hashtags,
             price=article.price,
         )
-        logger.info("[%s %dR] Note投稿完了: %s", race.venue_name, race.race_number, note_url)
+        logger.info(
+            "[%s %dR] Note投稿完了: %s",
+            race.venue_name, race.race_number, note_url,
+        )
 
-    result["note_url"] = note_url
 
     # ── X 投稿文生成 ──────────────────────────────────────────────
     x_post = x_gen.generate(
