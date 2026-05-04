@@ -1,55 +1,77 @@
 ﻿venues:
-  - id: "22"
-    name: "大村"
-    name_kana: "おおむら"
-    location: "長崎県"
-    water_type: "sea"
-    opening_type: "night"
+  - stadium_number: 22
+    id: "22"
+    name: 大村
+    name_kana: おおむら
+    location: 長崎県
+    water_type: sea
+    opening_type: night
     in_course_win_rate: 0.627
     characteristics:
-      - "防風ネット設置で風の影響が極小"
-      - "インが強い全国トップクラスの競艇場"
-      - "直線距離が短くアウトがスタートタイミングを計りにくい"
+      - 防風ネット設置で風の影響が極小
+      - インが強い全国トップクラスの競艇場
+      - 直線距離が短くアウトがスタートタイミングを計りにくい
     article_price: 500
     hashtags:
-      - "競艇"
-      - "ボートレース大村"
-      - "競艇予想"
-      - "大村競艇"
+      - 競艇
+      - ボートレース大村
+      - 競艇予想
+      - 大村競艇
 
-  - id: "18"
-    name: "住之江"
-    name_kana: "すみのえ"
-    location: "大阪府"
-    water_type: "fresh"
-    opening_type: "night"
+  - stadium_number: 18
+    id: "18"
+    name: 住之江
+    name_kana: すみのえ
+    location: 大阪府
+    water_type: fresh
+    opening_type: night
     in_course_win_rate: 0.576
     characteristics:
-      - "非常に硬い淡水でアウトのまくりが決まりにくい"
-      - "グランプリ（年末SG）の開催場"
-      - "1マークの振りが小さくインが直進しやすい"
+      - 非常に硬い淡水でアウトのまくりが決まりにくい
+      - グランプリ（年末SG）の開催場
+      - 1マークの振りが小さくインが直進しやすい
     article_price: 500
     hashtags:
-      - "競艇"
-      - "ボートレース住之江"
-      - "競艇予想"
-      - "住之江競艇"
+      - 競艇
+      - ボートレース住之江
+      - 競艇予想
+      - 住之江競艇
 
-  - id: "23"
-    name: "下関"
-    name_kana: "しものせき"
-    location: "山口県"
-    water_type: "sea"
-    opening_type: "midnight"
+  - stadium_number: 23
+    id: "23"
+    name: 下関
+    name_kana: しものせき
+    location: 山口県
+    water_type: sea
+    opening_type: midnight
     in_course_win_rate: 0.622
     characteristics:
-      - "堤防改修により潮の出入りがなくほぼ静水面"
-      - "ミッドナイト専門でLED照明が業界最高水準"
-      - "ピットから2マークの距離が全国2位"
+      - 堤防改修により潮の出入りがなくほぼ静水面
+      - ミッドナイト専門でLED照明が業界最高水準
+      - ピットから2マークの距離が全国2位
     article_price: 500
     hashtags:
-      - "競艇"
-      - "ボートレース下関"
-      - "競艇予想"
-      - "下関競艇"
-      - "ミッドナイトボートレース"
+      - 競艇
+      - ボートレース下関
+      - 競艇予想
+      - 下関競艇
+      - ミッドナイトボートレース
+
+  - stadium_number: 1
+    id: "01"
+    name: 桐生
+    name_kana: きりゅう
+    location: 群馬県
+    water_type: fresh
+    opening_type: day
+    in_course_win_rate: 0.55
+    characteristics:
+      - 赤城おろしの強風が吹きやすく波乱が多い
+      - 全国屈指の淡水面でモーター出力が出やすい
+      - 1マークのスペースが広くまくりが決まりやすい
+    article_price: 500
+    hashtags:
+      - 競艇
+      - ボートレース桐生
+      - 競艇予想
+      - 桐生競艇

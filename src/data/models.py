@@ -440,37 +440,36 @@ class RaceResult:
 
 @dataclass
 class VenueConfig:
-    """競艇場の設定情報。config/venues.yml から読み込む。"""
-    id: str
+    """会場設定（config/venues.yml の1エントリに対応）"""
     stadium_number: int
+    id: str
     name: str
-    name_kana: str
     location: str
-    water_type: str
-    opening_type: str
+    water_type: str          # sea / fresh
+    opening_type: str        # day / night / midnight
     in_course_win_rate: float
-    characteristics: list[str]
     article_price: int
     hashtags: list[str]
+    name_kana: str = ""
+    characteristics: list[str] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, d: dict) -> VenueConfig:
-        venue_id   = str(d.get("id", ""))
-        stadium_no = next(
-            (k for k, v in STADIUM_MAP.items()
-             if v[1] == venue_id.zfill(2)),
-            0
-        )
+    def from_dict(cls, d: dict) -> "VenueConfig":
         return cls(
-            id                 = venue_id,
-            stadium_number     = stadium_no,
-            name               = _str(d.get("name")),
-            name_kana          = _str(d.get("name_kana")),
-            location           = _str(d.get("location")),
-            water_type         = _str(d.get("water_type")),
-            opening_type       = _str(d.get("opening_type")),
-            in_course_win_rate = _float(d.get("in_course_win_rate")),
-            characteristics    = d.get("characteristics", []),
-            article_price      = _int(d.get("article_price"), 500),
-            hashtags           = d.get("hashtags", []),
+            stadium_number=_int(d.get("stadium_number")),
+            id=_str(d.get("id", "")),
+            name=_str(d.get("name", "")),
+            name_kana=_str(d.get("name_kana", "")),
+            location=_str(d.get("location", "")),
+            water_type=_str(d.get("water_type", "sea")),
+            opening_type=_str(d.get("opening_type", "day")),
+            in_course_win_rate=_float(d.get("in_course_win_rate", 0.55)),
+            article_price=_int(d.get("article_price", 500)),
+            hashtags=list(d.get("hashtags", [])),
+            characteristics=list(d.get("characteristics", [])),
         )
+
+    @property
+    def venue_name(self) -> str:
+        return self.name
+
