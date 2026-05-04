@@ -94,14 +94,15 @@ def _process_race(
     article = article_gen.generate(race=race, prediction=prediction)
     logger.info("[%s %dR] 記事生成完了: %d文字", race.venue_name, race.race_number, len(article.full_md))
 
-    # ── Note 投稿 ─────────────────────────────────────────────────
+    # ── Note 下書き保存 ───────────────────────────────────────────
+    # 自動処理は下書き保存まで。価格・ヘッダー画像・公開は手動で行う。
     body_html = markdown_to_note_html(article.full_md)
 
     if dry_run:
-        logger.info("[DRY_RUN] Note投稿スキップ: %s", article.title)
+        logger.info("[DRY_RUN] Note下書きスキップ: %s", article.title)
         note_url = "https://note.com/notes/dry_run_dummy"
     else:
-        # ステップ1: 下書き作成 → note_id と note_key を取得
+        # ステップ1: 下書き作成
         draft = note_client.create_draft()
         note_id = draft["id"]
         note_key = draft["key"]
@@ -110,27 +111,19 @@ def _process_race(
             race.venue_name, race.race_number, note_id, note_key,
         )
 
-        # ステップ2: 下書き一時保存
+        # ステップ2: 下書き一時保存（タイトル・本文のみ、価格設定なし）
         note_client.save_draft(
             note_id=note_id,
             title=article.title,
             body_html=body_html,
         )
-        logger.info("[%s %dR] 下書き保存完了", race.venue_name, race.race_number)
-
-        # ステップ3: 公開
-        note_url = note_client.publish(
-            note_id=note_id,
-            note_key=note_key,
-            title=article.title,
-            body_html=body_html,
-            hashtags=article.hashtags,
-            price=article.price,
-        )
         logger.info(
-            "[%s %dR] Note投稿完了: %s",
-            race.venue_name, race.race_number, note_url,
+            "[%s %dR] Note下書き保存完了 → https://note.com/notes/%s",
+            race.venue_name, race.race_number, note_key,
         )
+        # 下書きURLを返す（公開前なので/notes/ではなくdraft URL）
+        note_url = f"https://note.com/notes/{note_key}"
+
 
 
     # ── X 投稿文生成 ──────────────────────────────────────────────
