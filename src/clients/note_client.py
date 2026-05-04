@@ -133,28 +133,47 @@ class NoteClient:
         self.session.cookies.set(
             "_note_session_v5",
             session_cookie,
-            domain=".note.com",
+            domain=".note.com",   # ドットあり必須
         )
-        # 下書き作成でセッション確認
+        # 下書き作成でセッション有効性を確認
         resp = self.session.post(
             f"{BASE_URL}/api/v1/text_notes",
             json={"template_key": None},
             timeout=self.TIMEOUT,
         )
-        logger.debug("Cookie確認レスポンス: status=%d body=%s", resp.status_code, resp.text[:200])
+        logger.debug(
+            "Cookie確認: status=%d body=%s",
+            resp.status_code, resp.text[:300],
+        )
 
-        if resp.status_code in (200, 201):
-            body = resp.json()
-            data = body.get("data", body)
-            if "error" in data or "id" not in data:
-                logger.warning("Cookie注入: 認証エラー %s", data.get("error", data))
-                return False
-            self._prefetched_draft = data
-            logger.info("Cookie認証成功・下書き作成済み: id=%s", data.get("id"))
+        if resp.status_code not in (200, 201):
+            logger.warning("Cookie注入: status=%d → 無効", resp.status_code)
+            return False
+
+        body = resp.json()
+        # レスポンス構造: {"data": {...}} または直接 {...}
+        data = body.get("data", body)
+
+        # エラーチェック（auth エラーは無効なCookie）
+        if isinstance(data, dict) and "error" in data:
+            logger.warning("Cookie注入: 認証エラー %s", data["error"])
+            return False
+        if isinstance(body, dict) and "error" in body:
+            logger.warning("Cookie注入: 認証エラー %s", body["error"])
+            return False
+
+        # id が取得できれば成功
+        if isinstance(data, dict) and "id" in data:
+            self._prefetched_draft = {"id": data["id"], "key": data.get("key", "")}
+            logger.info(
+                "Cookie認証成功・下書き作成済み: id=%s key=%s",
+                data["id"], data.get("key", ""),
+            )
             return True
 
-        logger.warning("Cookie注入: status=%d", resp.status_code)
+        logger.warning("Cookie注入: 予期しないレスポンス %s", body)
         return False
+
 
     def _login_with_password(self, email: str, password: str) -> None:
         logger.info("メール/パスワードでログイン中...")
