@@ -1,6 +1,6 @@
 ﻿venues:
-  - stadium_number: 22
-    id: "22"
+  - stadium_number: 24
+    id: "24"
     name: 大村
     name_kana: おおむら
     location: 長崎県
@@ -18,8 +18,8 @@
       - 競艇予想
       - 大村競艇
 
-  - stadium_number: 18
-    id: "18"
+  - stadium_number: 12
+    id: "12"
     name: 住之江
     name_kana: すみのえ
     location: 大阪府
@@ -37,8 +37,8 @@
       - 競艇予想
       - 住之江競艇
 
-  - stadium_number: 23
-    id: "23"
+  - stadium_number: 19
+    id: "19"
     name: 下関
     name_kana: しものせき
     location: 山口県

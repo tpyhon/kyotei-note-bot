@@ -302,3 +302,33 @@ class Evaluator:
             f"実際:{record.actual_trifecta} "
             f"→ {' / '.join(hits)}"
         )
+    def record(self, prediction, race) -> None:
+        """
+        pipeline.py から呼び出される評価記録エントリポイント。
+        前日結果が取得できた場合のみ evaluate() を呼び出す。
+        """
+        try:
+            from src.data.boatrace_api import BoatraceAPIClient
+            from datetime import date, timedelta
+
+            api = BoatraceAPIClient(
+                cache_dir=self.results_dir.parent / "raw"
+            )
+            yesterday = date.today() - timedelta(days=1)
+            results = api.get_venue_results(yesterday, race.stadium_number)
+            actual = next(
+                (r for r in results if r.race_number == race.race_number),
+                None,
+            )
+            if actual is None:
+                logger.debug(
+                    "実結果なし: %s %dR → 評価スキップ",
+                    race.venue_name, race.race_number,
+                )
+                return
+            # 正しい引数名: actual=
+            self.evaluate(prediction=prediction, actual=actual)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("record() 内部エラー: %s", exc)
+
+

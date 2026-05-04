@@ -1,0 +1,56 @@
+name: 毎日競艇予想記事を投稿
+
+on:
+  schedule:
+    # JST 08:00 = UTC 23:00（前日）
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "DRY_RUN（trueにするとNote投稿をスキップ）"
+        required: false
+        default: "false"
+      target_race_number:
+        description: "対象レース番号（0=最終レース）"
+        required: false
+        default: "0"
+
+jobs:
+  post-prediction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: パイプラインを実行
+        env:
+          NOTE_EMAIL: ${{ secrets.NOTE_EMAIL }}
+          NOTE_PASSWORD: ${{ secrets.NOTE_PASSWORD }}
+          NOTE_SESSION_COOKIE: ${{ secrets.NOTE_SESSION_COOKIE }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          TARGET_RACE_NUMBER: ${{ github.event.inputs.target_race_number || '0' }}
+          LOG_LEVEL: INFO
+        run: python -m src.pipeline
+
+      - name: エラー時に Slack 通知
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"text":"❌ kyotei-note-bot パイプライン失敗: ${{ github.run_id }}"}'

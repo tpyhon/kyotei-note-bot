@@ -170,11 +170,14 @@ class ArticleGenerator:
         # ── 買い目 ────────────────────────────────────────────────
         lines.append("## 推奨買い目")
         for bt in prediction.buy_targets:
-            combo_str = "-".join(str(c) for c in bt.combination)
+            # combination が str の場合はそのまま、list の場合は結合
+            combo_str = bt.combination if isinstance(bt.combination, str) \
+                else "-".join(str(c) for c in bt.combination)
             lines.append(
                 f"- {bt.bet_type} {combo_str}"
                 f"（優先度: {bt.priority}、理由: {bt.reason}）"
             )
+
 
         return "\n".join(lines)
 

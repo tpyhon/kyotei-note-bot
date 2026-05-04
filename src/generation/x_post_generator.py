@@ -16,6 +16,16 @@ _X_MAX_CHARS = 140
 
 
 class XPostGenerator:
+    @staticmethod
+    def _combo_str(combination) -> str:
+        """
+        combination が str の場合はそのまま返す。
+        list/tuple の場合は "-" で結合する。
+        例: "1-3-5" → "1-3-5" / [1,3,5] → "1-3-5"
+        """
+        if isinstance(combination, str):
+            return combination
+        return "-".join(str(c) for c in combination)
     """Prediction + VenueConfig → X投稿文（140文字以内）を生成する"""
 
     def __init__(self, gemini_client: Optional[GeminiClient] = None) -> None:
@@ -74,11 +84,21 @@ class XPostGenerator:
         confidence_map = {"高": "🔥自信あり", "中": "⚡注目", "低": "💡穴狙い"}
         confidence_str = confidence_map.get(prediction.confidence, "⚡注目")
 
+        # bet_type 日本語変換
+        _BET_TYPE_JP = {
+            "trifecta": "3連単",
+            "exacta": "2連単",
+            "trio": "3連複",
+            "quinella": "2連複",
+        }
         buy_summary = ""
         if prediction.buy_targets:
             top = prediction.buy_targets[0]
-            combo = "-".join(str(c) for c in top.combination)
-            buy_summary = f"{top.bet_type} {combo}"
+            combo = self._combo_str(top.combination)   # ← 修正
+            bet_jp = _BET_TYPE_JP.get(top.bet_type, top.bet_type)
+            buy_summary = f"{bet_jp} {combo}"
+
+
 
         user_prompt = (
             f"以下のデータをもとに、競艇予想のX告知文を140文字以内で書いてください。\n\n"
@@ -105,29 +125,41 @@ class XPostGenerator:
         venue_config: VenueConfig,
         note_url: str,
     ) -> str:
-        """Gemini失敗時 or 140文字超時のハードコードフォールバック"""
         confidence_emoji = {"高": "🔥", "中": "⚡", "低": "💡"}.get(
             prediction.confidence, "⚡"
         )
+
+        # bet_type 日本語変換
+        _BET_TYPE_JP = {
+            "trifecta": "3連単",
+            "exacta": "2連単",
+            "trio": "3連複",
+            "quinella": "2連複",
+        }
+
         buy_str = ""
         if prediction.buy_targets:
             top = prediction.buy_targets[0]
-            combo = "-".join(str(c) for c in top.combination)
-            buy_str = f"注目買い目: {top.bet_type} {combo} "
+            combo = self._combo_str(top.combination)   # ← 修正
+            bet_jp = _BET_TYPE_JP.get(top.bet_type, top.bet_type)
+            buy_str = f"注目買い目: {bet_jp} {combo}\n"
+
 
         post = (
             f"{confidence_emoji}【{venue_config.name}競艇 予想】\n"
-            f"本命: {prediction.honmei.boat_number}号艇 {prediction.honmei.racer_name}\n"
-            f"{buy_str}\n"
+            f"本命: {prediction.honmei.boat_number}号艇"
+            f" {prediction.honmei.racer_name}\n"
+            f"{buy_str}"
             f"詳細はnoteで！\n{note_url}"
         )
 
-        # 140文字を超える場合はさらに短縮
-        if len(post) > _X_MAX_CHARS:
+        # 140文字超の場合はさらに短縮
+        if len(post) > 140:
             post = (
-                f"{confidence_emoji}{venue_config.name} "
-                f"{prediction.honmei.boat_number}号艇"
+                f"{confidence_emoji}{venue_config.name}"
+                f" {prediction.honmei.boat_number}号艇"
                 f"{prediction.honmei.racer_name}本命🎯\n"
                 f"{note_url}"
             )
         return post
+
