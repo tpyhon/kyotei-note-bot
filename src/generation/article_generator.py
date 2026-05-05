@@ -234,3 +234,104 @@ class ArticleGenerator:
                 seen.add(t)
                 result.append(t)
         return result
+    
+    def generate_venue(
+        self,
+        venue_config: VenueConfig,
+        race_predictions: list[tuple],
+        price: int = DEFAULT_PRICE,
+    ) -> ArticleResult:
+        """
+        1会場・複数レースをまとめた記事を生成する。
+
+        Args:
+            venue_config    : 会場設定
+            race_predictions: [(RaceProgram, Prediction), ...] のリスト
+            price           : 記事価格
+        Returns:
+            ArticleResult
+        """
+        input_text = self._build_venue_input(venue_config, race_predictions)
+
+        user_prompt = (
+            self._user_template.replace("{{INPUT_DATA}}", input_text)
+            if self._user_template and "{{INPUT_DATA}}" in self._user_template
+            else input_text
+        )
+
+        # 代表レースで信頼度の高いものを取得
+        best_race, best_pred = max(
+            race_predictions,
+            key=lambda rp: {"高": 3, "中": 2, "低": 1}.get(rp[1].confidence, 0),
+        )
+
+        logger.info(
+            "Gemini 会場まとめ記事生成: %s %d本",
+            venue_config.name, len(race_predictions),
+        )
+        raw_text = self.gemini.generate_with_fallback(
+            user_prompt=user_prompt,
+            system_prompt=self._system_prompt or None,
+            temperature=0.75,
+            max_output_tokens=6000,   # 複数レース分で長め
+        )
+        logger.info("Gemini 生成完了: %d文字", len(raw_text))
+
+        title = self._build_venue_title(venue_config, race_predictions, best_pred)
+        free_md, paid_md = self._split_sections(raw_text)
+        hashtags = self._build_hashtags(best_race, None)
+
+        return ArticleResult(
+            title=title,
+            free_md=free_md,
+            paid_md=paid_md,
+            full_md=raw_text,
+            hashtags=hashtags,
+            price=price,
+        )
+
+    def _build_venue_input(
+        self,
+        venue_config: VenueConfig,
+        race_predictions: list[tuple],
+    ) -> str:
+        """複数レース分の入力データを構築する"""
+        lines: list[str] = []
+
+        lines.append("## 会場情報")
+        lines.append(f"- 会場: {venue_config.name}（場コード {venue_config.stadium_number}）")
+        lines.append(f"- 水面: {venue_config.water_type}")
+        lines.append(f"- 開催形式: {venue_config.opening_type}")
+        lines.append(f"- イン1着率: {venue_config.in_course_win_rate:.1%}")
+        if venue_config.characteristics:
+            lines.append(f"- 特徴: {' / '.join(venue_config.characteristics)}")
+        lines.append("")
+
+        for race, prediction in race_predictions:
+            lines.append(f"{'='*40}")
+            lines.append(f"## {race.race_number}R （{race.grade_label}）信頼度: {prediction.confidence}")
+            lines.append(f"{'='*40}")
+            # 各レースのデータを追加（既存の_build_input_dataを流用）
+            lines.append(self._build_input_data(race, prediction))
+            lines.append("")
+
+        return "\n".join(lines)
+
+    def _build_venue_title(
+        self,
+        venue_config: VenueConfig,
+        race_predictions: list[tuple],
+        best_pred,
+    ) -> str:
+        """会場まとめ記事のタイトルを生成する"""
+        confidence_emoji = {"高": "🔥", "中": "⚡", "低": "💡"}.get(
+            best_pred.confidence, "⚡"
+        )
+        race_nums = "・".join(
+            f"{r.race_number}R" for r, _ in race_predictions
+        )
+        return (
+            f"{confidence_emoji}【{venue_config.name}】{race_nums} 本日の予想｜"
+            f"波乃みなとの競艇GOGO!"
+        )
+
